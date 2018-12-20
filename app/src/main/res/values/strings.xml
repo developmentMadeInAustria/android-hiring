@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">all about clubs</string>
     <string name="menu_sort">Sortierung</string>
+
+    <string name="list_item_value_placeholder">%d Millionen</string>
+
+    <string name="football_url">https://public.allaboutapps.at/hiring/clubs.json</string>
+
+    <string name="no_internet_connection">Laden nicht möglich. Bitte überprüfen Sie Ihre Internetverbindung!</string>
 </resources>
