@@ -1,9 +1,11 @@
 package at.allaboutapps.a3hiring;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -48,6 +50,8 @@ import at.allaboutapps.a3hiring.api.models.Club;
 
 public class MainActivity extends AppCompatActivity {
 
+  public static String PASS_CLUB_TO_DETAIL_KEY = "DETAIL_KEY";
+
   private static int SORT_MODE_DEFAULT = 0;
   private static int SORT_MODE_VALUE = 1;
   private static int selected_sort_mode = SORT_MODE_DEFAULT;
@@ -63,11 +67,10 @@ public class MainActivity extends AppCompatActivity {
 
     setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
 
-    progress_bar = findViewById(R.id.progress_bar);
-
     football_club_recycler = findViewById(R.id.football_club_recycler);
     football_club_recycler.setLayoutManager(new LinearLayoutManager(this));
 
+    progress_bar = findViewById(R.id.progress_bar);
     new LoadJsonAsyncTask().execute(getString(R.string.football_url));
 
   }
@@ -99,35 +102,6 @@ public class MainActivity extends AppCompatActivity {
     return super.onOptionsItemSelected(item);
   }
 
-
-  /**
-   *
-   * method for reading the json from the url
-   * using Google Gson Library
-   *
-   * @param string_url - the url to download the json
-   *
-   */
-  public static JsonArray readUrl(String string_url) {
-
-      try {
-        URL url = new URL(string_url);
-        URLConnection request = url.openConnection();
-        request.connect();
-
-        JsonParser parser = new JsonParser();
-        JsonElement element = parser.parse(new InputStreamReader((InputStream) request.getContent()));
-        JsonArray array = element.getAsJsonArray();
-        return array;
-
-      } catch (IOException e) {
-        e.printStackTrace();
-        return null;
-      }
-
-
-  }
-
   public class FootballClubAdapter extends RecyclerView.Adapter<FootballClubAdapter.FootballClubViewHolder> {
 
     ArrayList<Club> football_clubs;
@@ -145,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBindViewHolder(final FootballClubViewHolder holder, int position) {
-      Club club = football_clubs.get(position);
+      final Club club = football_clubs.get(position);
       Glide.with(getBaseContext())
               .load(club.component4())
               .listener(new RequestListener<Drawable>() {
@@ -165,6 +139,15 @@ public class MainActivity extends AppCompatActivity {
       holder.title.setText(club.component1());
       holder.nation.setText(club.component2());
       holder.value.setText(String.format(getString(R.string.list_item_value_placeholder), club.component3()));
+
+      holder.container.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+          Intent intent = new Intent(getBaseContext(), DetailActivity.class);
+          intent.putExtra(PASS_CLUB_TO_DETAIL_KEY, club);
+          startActivity(intent);
+        }
+      });
 
       if (position == getItemCount() - 1) {
         holder.divider.setVisibility(View.GONE);
@@ -208,6 +191,7 @@ public class MainActivity extends AppCompatActivity {
 
     public class FootballClubViewHolder extends RecyclerView.ViewHolder {
 
+      ConstraintLayout container;
       ImageView logo;
       TextView title;
       TextView nation;
@@ -217,6 +201,7 @@ public class MainActivity extends AppCompatActivity {
       public FootballClubViewHolder(View itemView) {
         super(itemView);
 
+        container = itemView.findViewById(R.id.list_item_football_club_container);
         logo = itemView.findViewById(R.id.list_item_football_club_logo);
         title = itemView.findViewById(R.id.list_item_football_club_title);
         nation = itemView.findViewById(R.id.list_item_football_club_nation);
