@@ -5,12 +5,10 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,20 +26,14 @@ import com.bumptech.glide.request.target.Target;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -67,10 +59,13 @@ public class MainActivity extends AppCompatActivity {
 
     setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
 
+    // Define Recycler View and set LayoutManager
     football_club_recycler = findViewById(R.id.football_club_recycler);
     football_club_recycler.setLayoutManager(new LinearLayoutManager(this));
 
+    // Define Progress Bar - visible while loading
     progress_bar = findViewById(R.id.progress_bar);
+    // start AsyncTask to load data from url and into the RecyclerView
     new LoadJsonAsyncTask().execute(getString(R.string.football_url));
 
   }
@@ -91,7 +86,9 @@ public class MainActivity extends AppCompatActivity {
 
     if (id == R.id.menuSort) {
 
+      // check if football_club_recycler is not null (when JSON is not loaded, Adapter is not initialized)
       if (football_club_recycler_adapter != null) {
+        // change sort mode, resort list, and reload data
         selected_sort_mode = selected_sort_mode == SORT_MODE_DEFAULT ? SORT_MODE_VALUE : SORT_MODE_DEFAULT;
         football_club_recycler_adapter.sort_football_clubs();
         football_club_recycler_adapter.notifyDataSetChanged();
@@ -119,7 +116,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBindViewHolder(final FootballClubViewHolder holder, int position) {
+      // get football club for this list item
       final Club club = football_clubs.get(position);
+
+      // load logo with Glide library
+      // set listener - to check if loading has failed - when failed, set placeholder image
       Glide.with(getBaseContext())
               .load(club.component4())
               .listener(new RequestListener<Drawable>() {
@@ -136,11 +137,13 @@ public class MainActivity extends AppCompatActivity {
                   }
               })
               .into(holder.logo);
+      // set other text components
       holder.title.setText(club.component1());
       holder.nation.setText(club.component2());
       holder.value.setText(String.format(getString(R.string.list_item_value_placeholder), club.component3()));
 
-      holder.container.setOnClickListener(new View.OnClickListener() {
+      // set onClickListener to open DetailActivity, pass football club to Activity
+      holder.logo.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View view) {
           Intent intent = new Intent(getBaseContext(), DetailActivity.class);
@@ -149,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
         }
       });
 
+      // set visibility of divider, divider not visible at last element
       if (position == getItemCount() - 1) {
         holder.divider.setVisibility(View.GONE);
       } else {
@@ -162,6 +166,10 @@ public class MainActivity extends AppCompatActivity {
       return football_clubs.size();
     }
 
+    // method for sorting football clubs
+    // depending on sort mode
+    // sort mode default - sorting by name
+    // sort mode value - sorting by value of club
     public void sort_football_clubs() {
       if (football_clubs != null) {
         if (selected_sort_mode == SORT_MODE_DEFAULT) {
@@ -191,7 +199,6 @@ public class MainActivity extends AppCompatActivity {
 
     public class FootballClubViewHolder extends RecyclerView.ViewHolder {
 
-      ConstraintLayout container;
       ImageView logo;
       TextView title;
       TextView nation;
@@ -201,7 +208,6 @@ public class MainActivity extends AppCompatActivity {
       public FootballClubViewHolder(View itemView) {
         super(itemView);
 
-        container = itemView.findViewById(R.id.list_item_football_club_container);
         logo = itemView.findViewById(R.id.list_item_football_club_logo);
         title = itemView.findViewById(R.id.list_item_football_club_title);
         nation = itemView.findViewById(R.id.list_item_football_club_nation);
@@ -216,7 +222,9 @@ public class MainActivity extends AppCompatActivity {
 
   public class LoadJsonAsyncTask extends AsyncTask<String, Void, JsonArray> {
 
-
+    // load json from url
+    // with Gson library
+    // return JsonArray to populate in onPostExecute
     @Override
     protected JsonArray doInBackground(String... strings) {
       try {
@@ -235,9 +243,11 @@ public class MainActivity extends AppCompatActivity {
       }
     }
 
+    // populates RecyclerView with data
     @Override
     protected void onPostExecute(JsonArray football_clubs) {
 
+      // when loading has failed, show message to user
       if (football_clubs == null) {
         Toast.makeText(getBaseContext(), getString(R.string.no_internet_connection), Toast.LENGTH_LONG).show();
       } else {
@@ -250,6 +260,7 @@ public class MainActivity extends AppCompatActivity {
         }
         football_club_recycler_adapter = new FootballClubAdapter(football_club_list);
         football_club_recycler.setAdapter(football_club_recycler_adapter);
+        // remove progress bar - loading finished
         progress_bar.setVisibility(View.GONE);
       }
 

@@ -31,7 +31,6 @@
             android:id="@+id/activity_detail_logo"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:src="@drawable/club_placeholder"
             android:scaleType="fitCenter"
             android:padding="32dp"
             android:background="@color/header_background" />

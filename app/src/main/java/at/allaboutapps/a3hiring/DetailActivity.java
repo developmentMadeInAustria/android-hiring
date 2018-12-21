@@ -1,12 +1,12 @@
 package at.allaboutapps.a3hiring;
 
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
-import android.text.SpannableString;
 import android.text.Spanned;
 import android.view.MenuItem;
 import android.widget.ImageView;
@@ -22,6 +22,7 @@ import at.allaboutapps.a3hiring.api.models.Club;
 
 public class DetailActivity extends AppCompatActivity {
 
+    // club to show
     Club club;
 
     @Override
@@ -32,11 +33,15 @@ public class DetailActivity extends AppCompatActivity {
 
         club = getIntent().getParcelableExtra(MainActivity.PASS_CLUB_TO_DETAIL_KEY);
 
-        Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
+        // find toolbar, set the title
+        Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(club.component1());
         setSupportActionBar(toolbar);
+        // set back button
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        // load logo with Glide library
+        // check with listener, if loading has failed - when failed, set placeholder
         final ImageView logoView = findViewById(R.id.activity_detail_logo);
         Glide.with(getBaseContext())
                 .load(club.component4())
@@ -55,9 +60,11 @@ public class DetailActivity extends AppCompatActivity {
                 })
                 .into(logoView);
 
+        // set the text for the country of the club
         TextView nationView = findViewById(R.id.activity_detail_nation);
         nationView.setText(club.component1());
 
+        // set the text for the club and format with Html.fromHtml to display the name of the club bold
         TextView sentenceView = findViewById(R.id.activity_detail_sentence);
         String sentence = String.format(getResources().getString(R.string.activity_detail_sentence), club.component1(), club.component2(), club.component3());
         Spanned span = Html.fromHtml(sentence);
@@ -69,6 +76,7 @@ public class DetailActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if (item.getItemId() == android.R.id.home) {
+            // use onBackPressed to prevent reloading
             onBackPressed();
             return true;
         }
